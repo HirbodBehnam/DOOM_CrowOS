@@ -16,7 +16,6 @@
 //	WAD I/O functions.
 //
 
-#include <stdio.h>
 
 #include "config.h"
 
@@ -24,6 +23,8 @@
 #include "m_argv.h"
 
 #include "w_file.h"
+
+#include "libc/ctype.h"
 
 extern wad_file_class_t stdc_wad_file;
 

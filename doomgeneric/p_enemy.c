@@ -18,9 +18,6 @@
 //	that are associated with states/frames. 
 //
 
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "m_random.h"
 #include "i_system.h"
 

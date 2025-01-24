@@ -16,7 +16,6 @@
 //
 
 
-#include <ctype.h>
 
 #include "doomdef.h"
 #include "doomkeys.h"
@@ -27,6 +26,8 @@
 #include "hu_lib.h"
 #include "r_local.h"
 #include "r_draw.h"
+
+#include "libc/ctype.h"
 
 // boolean : whether the screen is always erased
 #define noterased viewwindowx

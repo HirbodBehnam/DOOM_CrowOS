@@ -17,8 +17,6 @@
 //	generation of lookups, caching, retrieval by name.
 //
 
-#include <stdio.h>
-
 #include "deh_main.h"
 #include "i_swap.h"
 #include "i_system.h"

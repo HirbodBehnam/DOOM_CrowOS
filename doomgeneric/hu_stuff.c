@@ -16,8 +16,6 @@
 //
 
 
-#include <ctype.h>
-
 #include "doomdef.h"
 #include "doomkeys.h"
 

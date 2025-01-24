@@ -17,8 +17,6 @@
 //
 
 
-#include <stdio.h>
-#include <stdlib.h>
 
 #include "dstrings.h"
 #include "deh_main.h"
@@ -28,15 +26,19 @@
 #include "p_saveg.h"
 
 // State.
+
 #include "doomstat.h"
 #include "g_game.h"
 #include "m_misc.h"
 #include "r_state.h"
 
+#include "libc/file.h"
+#include "libc/usyscalls.h"
+
 #define SAVEGAME_EOF 0x1d
 #define VERSIONSIZE 16 
 
-FILE *save_stream;
+int save_stream;
 int savegamelength;
 boolean savegame_error;
 
@@ -82,7 +84,7 @@ static byte saveg_read8(void)
 {
     byte result;
 
-    if (fread(&result, 1, 1, save_stream) < 1)
+    if (read(save_stream, &result, sizeof(result)) < 1)
     {
         if (!savegame_error)
         {
@@ -98,7 +100,7 @@ static byte saveg_read8(void)
 
 static void saveg_write8(byte value)
 {
-    if (fwrite(&value, 1, 1, save_stream) < 1)
+    if (write(save_stream, &value, sizeof(value)) < 1)
     {
         if (!savegame_error)
         {
@@ -153,7 +155,7 @@ static void saveg_read_pad(void)
     int padding;
     int i;
 
-    pos = ftell(save_stream);
+    pos = lseek(save_stream, 0, SEEK_CUR);
 
     padding = (4 - (pos & 3)) & 3;
 
@@ -169,7 +171,7 @@ static void saveg_write_pad(void)
     int padding;
     int i;
 
-    pos = ftell(save_stream);
+    pos = lseek(save_stream, 0, SEEK_CUR);
 
     padding = (4 - (pos & 3)) & 3;
 

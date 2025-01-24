@@ -16,11 +16,6 @@
 //     to the IWAD type.
 //
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <ctype.h>
-#include <string.h>
-
 #include "config.h"
 #include "deh_str.h"
 #include "doomkeys.h"
@@ -722,12 +717,16 @@ char *D_FindIWAD(int mask, GameMission_t *mission)
 
         iwadfile = myargv[iwadparm + 1];
 
+        DEH_printf("D_FindIWAD: Candidate: %s\n", iwadfile);
+
         result = D_FindWADByName(iwadfile);
 
         if (result == NULL)
         {
             I_Error("IWAD file '%s' not found!", iwadfile);
         }
+
+        DEH_printf("D_FindIWAD: Using %s IWAD\n", result);
         
         *mission = IdentifyIWADByName(result, mask);
     }

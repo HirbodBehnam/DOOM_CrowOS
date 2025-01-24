@@ -16,7 +16,7 @@
 //	Moving object handling. Spawn functions.
 //
 
-#include <stdio.h>
+
 
 #include "i_system.h"
 #include "z_zone.h"

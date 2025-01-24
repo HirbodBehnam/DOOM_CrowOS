@@ -18,8 +18,6 @@
 //
 
 
-#include <stdlib.h>
-#include <ctype.h>
 
 
 #include "doomdef.h"
@@ -57,6 +55,10 @@
 #include "sounds.h"
 
 #include "m_menu.h"
+
+#include "libc/ctype.h"
+#include "libc/file.h"
+#include "libc/usyscalls.h"
 
 
 extern patch_t*		hu_font[HU_FONTSIZE];
@@ -502,7 +504,7 @@ menu_t  SaveDef =
 //
 void M_ReadSaveStrings(void)
 {
-    FILE   *handle;
+    int   handle;
     int     i;
     char    name[256];
 
@@ -510,15 +512,15 @@ void M_ReadSaveStrings(void)
     {
         M_StringCopy(name, P_SaveGameFile(i), sizeof(name));
 
-	handle = fopen(name, "rb");
-        if (handle == NULL)
+	handle = open(name, O_RDONLY);
+        if (handle < 0)
         {
             M_StringCopy(savegamestrings[i], EMPTYSTRING, SAVESTRINGSIZE);
             LoadMenu[i].status = 0;
             continue;
         }
-	fread(&savegamestrings[i], 1, SAVESTRINGSIZE, handle);
-	fclose(handle);
+	read(handle, &savegamestrings[i], SAVESTRINGSIZE);
+	close(handle);
 	LoadMenu[i].status = 1;
     }
 }

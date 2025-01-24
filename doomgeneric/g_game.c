@@ -17,9 +17,6 @@
 
 
 
-#include <string.h>
-#include <stdlib.h>
-#include <math.h>
 
 #include "doomdef.h" 
 #include "doomkeys.h"
@@ -71,6 +68,10 @@
 
 
 #include "g_game.h"
+
+#include "libc/file.h"
+#include "libc/stdlib.h"
+#include "libc/usyscalls.h"
 
 
 #define SAVEGAMESIZE	0x2c000
@@ -1551,9 +1552,9 @@ void G_DoLoadGame (void)
 	 
     gameaction = ga_nothing; 
 	 
-    save_stream = fopen(savename, "rb");
+    save_stream = open(savename, O_RDONLY);
 
-    if (save_stream == NULL)
+    if (save_stream < 0)
     {
     	return;
     }
@@ -1562,7 +1563,7 @@ void G_DoLoadGame (void)
 
     if (!P_ReadSaveGameHeader())
     {
-        fclose(save_stream);
+        close(save_stream);
         return;
     }
 
@@ -1582,7 +1583,7 @@ void G_DoLoadGame (void)
     if (!P_ReadSaveGameEOF())
 	I_Error ("Bad savegame");
 
-    fclose(save_stream);
+    close(save_stream);
     
     if (setsizeneeded)
     	R_ExecuteSetViewSize ();
@@ -1621,15 +1622,15 @@ void G_DoSaveGame (void)
     // and then rename it at the end if it was successfully written.
     // This prevents an existing savegame from being overwritten by 
     // a corrupted one, or if a savegame buffer overrun occurs.
-    save_stream = fopen(temp_savegame_file, "wb");
+    save_stream = open(temp_savegame_file, O_RDWR);
 
-    if (save_stream == NULL)
+    if (save_stream < 0)
     {
         // Failed to save the game, so we're going to have to abort. But
         // to be nice, save to somewhere else before we call I_Error().
         recovery_savegame_file = M_TempFile("recovery.dsg");
-        save_stream = fopen(recovery_savegame_file, "wb");
-        if (save_stream == NULL)
+        save_stream = open(recovery_savegame_file, O_WRONLY);
+        if (save_stream < 0)
         {
             I_Error("Failed to open either '%s' or '%s' to write savegame.",
                     temp_savegame_file, recovery_savegame_file);
@@ -1650,14 +1651,14 @@ void G_DoSaveGame (void)
     // Enforce the same savegame size limit as in Vanilla Doom, 
     // except if the vanilla_savegame_limit setting is turned off.
 
-    if (vanilla_savegame_limit && ftell(save_stream) > SAVEGAMESIZE)
+    if (vanilla_savegame_limit && lseek(save_stream, SEEK_CUR, 0) > SAVEGAMESIZE)
     {
         I_Error ("Savegame buffer overrun");
     }
     
     // Finish up, close the savegame file.
 
-    fclose(save_stream);
+    close(save_stream);
 
     if (recovery_savegame_file != NULL)
     {
@@ -1672,7 +1673,7 @@ void G_DoSaveGame (void)
     // Now rename the temporary savegame file to the actual savegame
     // file, overwriting the old savegame if there was one there.
 
-    remove(savegame_file);
+    unlink(savegame_file);
     rename(temp_savegame_file, savegame_file);
     
     gameaction = ga_nothing;
@@ -2251,18 +2252,18 @@ boolean G_CheckDemoStatus (void)
 	 
     if (timingdemo) 
     { 
-        float fps;
+        int fps;
         int realtics;
 
 	endtime = I_GetTime (); 
         realtics = endtime - starttime;
-        fps = ((float) gametic * TICRATE) / realtics;
+        fps = (gametic * TICRATE) / realtics;
 
         // Prevent recursive calls
         timingdemo = false;
         demoplayback = false;
 
-	I_Error ("timed %i gametics in %i realtics (%f fps)",
+	I_Error ("timed %i gametics in %i realtics (%i fps)",
                  gametic, realtics, fps);
     } 
 	 

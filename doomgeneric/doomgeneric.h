@@ -1,7 +1,6 @@
 #ifndef DOOM_GENERIC
 #define DOOM_GENERIC
 
-#include <stdlib.h>
 #include <stdint.h>
 
 #ifndef DOOMGENERIC_RESX

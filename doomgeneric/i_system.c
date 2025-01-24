@@ -17,17 +17,13 @@
 
 
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-
 #include <stdarg.h>
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #else
-#include <unistd.h>
+
 #endif
 
 #ifdef ORIGCODE
@@ -264,92 +260,6 @@ void I_Quit (void)
 #endif
 }
 
-#if !defined(_WIN32) && !defined(__MACOSX__) && !defined(__DJGPP__)
-#define ZENITY_BINARY "/usr/bin/zenity"
-
-// returns non-zero if zenity is available
-
-static int ZenityAvailable(void)
-{
-    return system(ZENITY_BINARY " --help >/dev/null 2>&1") == 0;
-}
-
-// Escape special characters in the given string so that they can be
-// safely enclosed in shell quotes.
-
-static char *EscapeShellString(char *string)
-{
-    char *result;
-    char *r, *s;
-
-    // In the worst case, every character might be escaped.
-    result = malloc(strlen(string) * 2 + 3);
-    r = result;
-
-    // Enclosing quotes.
-    *r = '"';
-    ++r;
-
-    for (s = string; *s != '\0'; ++s)
-    {
-        // From the bash manual:
-        //
-        //  "Enclosing characters in double quotes preserves the literal
-        //   value of all characters within the quotes, with the exception
-        //   of $, `, \, and, when history expansion is enabled, !."
-        //
-        // Therefore, escape these characters by prefixing with a backslash.
-
-        if (strchr("$`\\!", *s) != NULL)
-        {
-            *r = '\\';
-            ++r;
-        }
-
-        *r = *s;
-        ++r;
-    }
-
-    // Enclosing quotes.
-    *r = '"';
-    ++r;
-    *r = '\0';
-
-    return result;
-}
-
-// Open a native error box with a message using zenity
-
-static int ZenityErrorBox(char *message)
-{
-    int result;
-    char *escaped_message;
-    char *errorboxpath;
-    static size_t errorboxpath_size;
-
-    if (!ZenityAvailable())
-    {
-        return 0;
-    }
-
-    escaped_message = EscapeShellString(message);
-
-    errorboxpath_size = strlen(ZENITY_BINARY) + strlen(escaped_message) + 19;
-    errorboxpath = malloc(errorboxpath_size);
-    M_snprintf(errorboxpath, errorboxpath_size, "%s --error --text=%s",
-               ZENITY_BINARY, escaped_message);
-
-    result = system(errorboxpath);
-
-    free(errorboxpath);
-    free(escaped_message);
-
-    return result;
-}
-
-#endif /* !defined(_WIN32) && !defined(__MACOSX__) && !defined(__DJGPP__) */
-
-
 //
 // I_Error
 //
@@ -381,7 +291,6 @@ void I_Error (char *error, ...)
     vfprintf(stderr, error, argptr);
     fprintf(stderr, "\n\n");
     va_end(argptr);
-    fflush(stderr);
 
     // Write a copy of the message into buffer.
     va_start(argptr, error);
@@ -456,7 +365,7 @@ void I_Error (char *error, ...)
 
 #else
     {
-        ZenityErrorBox(msgbuf);
+        
     }
 #endif
 

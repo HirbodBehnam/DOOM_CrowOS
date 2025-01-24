@@ -18,12 +18,6 @@
 //
 
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include <errno.h>
-
 #include "config.h"
 
 #include "doomtype.h"
@@ -54,7 +48,6 @@ typedef enum
     DEFAULT_INT,
     DEFAULT_INT_HEX,
     DEFAULT_STRING,
-    DEFAULT_FLOAT,
     DEFAULT_KEY,
 } default_type_t;
 
@@ -101,8 +94,6 @@ typedef struct
     CONFIG_VARIABLE_GENERIC(name, DEFAULT_INT)
 #define CONFIG_VARIABLE_INT_HEX(name) \
     CONFIG_VARIABLE_GENERIC(name, DEFAULT_INT_HEX)
-#define CONFIG_VARIABLE_FLOAT(name) \
-    CONFIG_VARIABLE_GENERIC(name, DEFAULT_FLOAT)
 #define CONFIG_VARIABLE_STRING(name) \
     CONFIG_VARIABLE_GENERIC(name, DEFAULT_STRING)
 
@@ -763,14 +754,6 @@ static default_t extra_defaults_list[] =
     //
 
     CONFIG_VARIABLE_INT(novert),
-
-    //!
-    // Mouse acceleration factor.  When the speed of mouse movement
-    // exceeds the threshold value (mouse_threshold), the speed is
-    // multiplied by this value.
-    //
-
-    CONFIG_VARIABLE_FLOAT(mouse_acceleration),
 
     //!
     // Mouse acceleration threshold.  When the speed of mouse movement
@@ -1715,14 +1698,7 @@ static void SaveDefaultCollection(default_collection_t *collection)
 
 static int ParseIntParameter(char *strparm)
 {
-    int parm;
-
-    if (strparm[0] == '0' && strparm[1] == 'x')
-        sscanf(strparm+2, "%x", &parm);
-    else
-        sscanf(strparm, "%i", &parm);
-
-    return parm;
+    return atoi(strparm);
 }
 
 static void SetVariable(default_t *def, char *value)
@@ -1760,10 +1736,6 @@ static void SetVariable(default_t *def, char *value)
 
             def->original_translated = intparm;
             * (int *) def->location = intparm;
-            break;
-
-        case DEFAULT_FLOAT:
-            * (float *) def->location = (float) atof(value);
             break;
     }
 }
@@ -2022,28 +1994,13 @@ const char *M_GetStrVariable(char *name)
     return *((const char **) variable->location);
 }
 
-float M_GetFloatVariable(char *name)
-{
-    default_t *variable;
-
-    variable = GetDefaultForName(name);
-
-    if (variable == NULL || !variable->bound
-     || variable->type != DEFAULT_FLOAT)
-    {
-        return 0;
-    }
-
-    return *((float *) variable->location);
-}
-
 // Get the path to the default configuration dir to use, if NULL
 // is passed to M_SetConfigDir.
 
 static char *GetDefaultConfigDir(void)
 {
     char *result = (char *)malloc(2);
-    result[0] = '.';
+    result[0] = '/';
     result[1] = '\0';
 
     return result;

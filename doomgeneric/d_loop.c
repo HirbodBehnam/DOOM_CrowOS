@@ -16,9 +16,6 @@
 //     Main loop code.
 //
 
-#include <stdlib.h>
-#include <string.h>
-
 #include "doomfeatures.h"
 
 #include "d_event.h"

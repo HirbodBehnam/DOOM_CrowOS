@@ -20,11 +20,6 @@
 //
 
 
-#include <ctype.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include "config.h"
 #include "deh_main.h"
 #include "doomdef.h"
@@ -73,6 +68,9 @@
 #include "statdump.h"
 
 #include "d_main.h"
+
+#include "libc/ctype.h"
+#include "libc/usyscalls.h"
 
 //
 // D-DoomLoop()
@@ -267,13 +265,6 @@ void D_Display (void)
 			R_DrawViewBorder ();    // erase old menu stuff
 			borderdrawcount--;
 		}
-    }
-
-    if (testcontrols)
-    {
-        // Box showing current mouse speed
-
-        V_DrawMouseSpeedBox(testcontrols_mousespeed);
     }
 
     menuactivestate = menuactive;

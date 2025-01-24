@@ -22,9 +22,6 @@
 
 
 
-#include <stdlib.h>
-
-
 #include "m_bbox.h"
 
 #include "doomdef.h"

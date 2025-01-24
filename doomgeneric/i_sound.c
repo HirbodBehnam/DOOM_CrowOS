@@ -15,8 +15,6 @@
 // DESCRIPTION:  none
 //
 
-#include <stdio.h>
-#include <stdlib.h>
 
 #if defined(FEATURE_SOUND) && !defined(__DJGPP__)
 #include <SDL_mixer.h>

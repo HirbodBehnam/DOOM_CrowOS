@@ -19,8 +19,6 @@
 
 
 
-#include <math.h>
-
 #include "z_zone.h"
 
 #include "deh_main.h"

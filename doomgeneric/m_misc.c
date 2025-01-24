@@ -18,11 +18,6 @@
 //
 
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include <errno.h>
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -32,8 +27,7 @@
 #include <direct.h>
 #endif
 #else
-#include <sys/stat.h>
-#include <sys/types.h>
+
 #endif
 
 #include "doomtype.h"
@@ -48,6 +42,10 @@
 #include "w_wad.h"
 #include "z_zone.h"
 
+#include "libc/ctype.h"
+#include "libc/file.h"
+#include "libc/usyscalls.h"
+
 //
 // Create a directory
 //
@@ -57,7 +55,7 @@ void M_MakeDirectory(char *path)
 #ifdef _WIN32
     mkdir(path);
 #else
-    mkdir(path, 0755);
+    mkdir(path);
 #endif
 }
 
@@ -65,13 +63,13 @@ void M_MakeDirectory(char *path)
 
 boolean M_FileExists(char *filename)
 {
-    FILE *fstream;
+    int fstream;
 
-    fstream = fopen(filename, "r");
+    fstream = open(filename, O_RDONLY);
 
-    if (fstream != NULL)
+    if (fstream >= 0)
     {
-        fclose(fstream);
+        close(fstream);
         return true;
     }
     else
@@ -79,7 +77,7 @@ boolean M_FileExists(char *filename)
         // If we can't open because the file is a directory, the 
         // "file" exists at least!
 
-        return errno == EISDIR;
+        return false;
     }
 }
 
@@ -87,20 +85,20 @@ boolean M_FileExists(char *filename)
 // Determine the length of an open file.
 //
 
-long M_FileLength(FILE *handle)
+long M_FileLength(int handle)
 { 
     long savedpos;
     long length;
 
     // save the current position in the file
-    savedpos = ftell(handle);
+    savedpos = lseek(handle, 0, SEEK_CUR);
     
     // jump to the end and find the length
-    fseek(handle, 0, SEEK_END);
-    length = ftell(handle);
+    lseek(handle, 0, SEEK_END);
+    length = lseek(handle, 0, SEEK_CUR);
 
     // go back to the old location
-    fseek(handle, savedpos, SEEK_SET);
+    lseek(handle, savedpos, SEEK_SET);
 
     return length;
 }
@@ -111,16 +109,16 @@ long M_FileLength(FILE *handle)
 
 boolean M_WriteFile(char *name, void *source, int length)
 {
-    FILE *handle;
+    int handle;
     int	count;
 	
-    handle = fopen(name, "wb");
+    handle = open(name, O_WRONLY);
 
-    if (handle == NULL)
-	return false;
+    if (handle < 0)
+	    return false;
 
-    count = fwrite(source, 1, length, handle);
-    fclose(handle);
+    count = write(handle, source, length);
+    close(handle);
 	
     if (count < length)
 	return false;
@@ -135,12 +133,12 @@ boolean M_WriteFile(char *name, void *source, int length)
 
 int M_ReadFile(char *name, byte **buffer)
 {
-    FILE *handle;
+    int handle;
     int	count, length;
     byte *buf;
 	
-    handle = fopen(name, "rb");
-    if (handle == NULL)
+    handle = open(name, O_RDONLY);
+    if (handle < 0)
 	I_Error ("Couldn't read file %s", name);
 
     // find the size of the file by seeking to the end and
@@ -149,8 +147,8 @@ int M_ReadFile(char *name, byte **buffer)
     length = M_FileLength(handle);
     
     buf = Z_Malloc (length, PU_STATIC, NULL);
-    count = fread(buf, 1, length, handle);
-    fclose (handle);
+    count = read(handle, buf, length);
+    close (handle);
 	
     if (count < length)
 	I_Error ("Couldn't read file %s", name);
@@ -189,10 +187,8 @@ char *M_TempFile(char *s)
 
 boolean M_StrToInt(const char *str, int *result)
 {
-    return sscanf(str, " 0x%x", result) == 1
-        || sscanf(str, " 0X%x", result) == 1
-        || sscanf(str, " 0%o", result) == 1
-        || sscanf(str, " %d", result) == 1;
+    *result = atoi(str);
+    return true;
 }
 
 void M_ExtractFileBase(char *path, char *dest)
@@ -481,27 +477,16 @@ char *M_StringJoin(const char *s, ...)
 // Safe, portable vsnprintf().
 int M_vsnprintf(char *buf, size_t buf_len, const char *s, va_list args)
 {
-    int result;
 
     if (buf_len < 1)
     {
         return 0;
     }
 
-    // Windows (and other OSes?) has a vsnprintf() that doesn't always
-    // append a trailing \0. So we must do it, and write into a buffer
-    // that is one byte shorter; otherwise this function is unsafe.
-    result = vsnprintf(buf, buf_len, s, args);
+    vsnprintf(buf, buf_len, s, args);
 
-    // If truncated, change the final char in the buffer to a \0.
-    // A negative result indicates a truncated buffer on Windows.
-    if (result < 0 || result >= buf_len)
-    {
-        buf[buf_len - 1] = '\0';
-        result = buf_len - 1;
-    }
 
-    return result;
+    return strlen(buf);
 }
 
 // Safe, portable snprintf().

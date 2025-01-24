@@ -149,8 +149,6 @@ struct color {
 extern char *video_driver;
 extern boolean screenvisible;
 
-extern float mouse_acceleration;
-extern int mouse_threshold;
 extern int vanilla_keyboard_mapping;
 extern boolean screensaver_mode;
 extern int usegamma;

@@ -17,9 +17,6 @@
 //
 
 
-#include <stdio.h>
-#include <ctype.h>
-
 // Functions.
 #include "deh_main.h"
 #include "i_system.h"
@@ -36,6 +33,8 @@
 
 #include "doomstat.h"
 #include "r_state.h"
+
+#include "libc/ctype.h"
 
 typedef enum
 {

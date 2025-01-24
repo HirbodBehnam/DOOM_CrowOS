@@ -32,8 +32,6 @@
 
 #else
 
-#include <strings.h>
-
 #endif
 
 
@@ -60,7 +58,11 @@
 // pre-standardisation version).  inttypes.h is also in the C99 
 // standard and defined to include stdint.h, so include this. 
 
-#include <inttypes.h>
+#include <stdint.h>
+#include <stddef.h>
+#include "libc/stdlib.h"
+#include "libc/stdio.h"
+#include "libc/string.h"
 
 #ifdef __cplusplus
 
