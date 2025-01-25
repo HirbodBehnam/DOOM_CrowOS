@@ -102,6 +102,7 @@ void DG_DrawFrame() {
     int keys_pressed = read(async_serial_fd, keypressed_buffer, sizeof(keypressed_buffer));
     if (keys_pressed != 0) {
         addKeyToQueue(1, keypressed_buffer[keys_pressed - 1]);
+        addKeyToQueue(2, keypressed_buffer[keys_pressed - 1]);
         addKeyToQueue(0, keypressed_buffer[keys_pressed - 1]);
     }
     // Draw the frame
